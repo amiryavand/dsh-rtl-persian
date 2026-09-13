@@ -20,11 +20,11 @@
  *      in the client consumes that token (directly or through inheritance), so
  *      one declaration retypes the whole surface without touching component
  *      stylesheets.
- *   3. `unicode-bidi: plaintext` on text blocks — the CSS half of `dir="auto"`,
- *      which makes each block take its direction from its own first strong
- *      character. The browser script served alongside this file then sets the
- *      real `dir="auto"` attribute, which additionally moves list markers,
- *      blockquote borders, and the `text-align: start` edge.
+ *   3. `unicode-bidi: plaintext` on every text box — the CSS half of
+ *      `dir="auto"`, which makes each box take its direction from its own first
+ *      strong character. The browser script served alongside this file then
+ *      sets the real `dir="auto"` attribute, which additionally moves list
+ *      markers, blockquote borders, and the `text-align: start` edge.
  *
  * The stylesheet is appended to the end of `<head>` through the webserver's raw
  * index tap, so it lands *after* the surface's own stylesheets and after the
@@ -144,28 +144,35 @@ function buildCss(font, direction) {
   }
 
   if (direction) {
-    // `:where()` keeps the selector's specificity at zero so component rules
-    // still win wherever they express an intent of their own. `:not([dir])`
-    // defers to explicitly-directed markup (code blocks, RTL-aware
-    // components) and to the `dir="auto"` the browser script sets.
+    // The no-script fallback, and deliberately broad. The browser script keys on
+    // structure — "does this box own a run of text?" — because the chat bubble
+    // is a block `div` wrapping an inline `span`, and no tag list predicts that.
+    // CSS cannot ask that question, so it answers the cheap version: every text
+    // box resolves bidi as its own paragraph. `unicode-bidi` only affects
+    // inline-level content, so block containers and layout wrappers are
+    // untouched, and `:not([dir])` defers to explicitly-directed markup (code
+    // blocks, RTL-aware components) and to the script's own `dir="auto"`.
     parts.push(
-      `html:root :where(${TEXT_BLOCKS}):not([dir]){`
-      + 'unicode-bidi:plaintext;text-align:start}',
+      'html:root :where(*):not(pre,code,kbd,samp,[dir]){unicode-bidi:plaintext}',
+      // Alignment is a separate concern: `text-align: start` has to follow the
+      // *element's* direction, so it can only be asserted where the surface
+      // expresses no alignment of its own. Centred and right-aligned UI chrome
+      // must keep winning, hence the narrow list rather than the broad one.
+      `html:root :where(${TEXT_BLOCKS}):not([dir]){text-align:start}`,
       // The markdown sheet hardcodes physical sides — `blockquote` carries
       // `border-left` + `padding-left:14px` and `:where(ul,ol)` carries
       // `padding-left:18px` — so an RTL block would keep its rule and indent
       // on the far side from its text. `:dir()` reads the *resolved*
       // direction rather than the attribute text, so it is true for exactly
-      // the elements the browser script annotated with `dir="auto"`.
-      //
-      // The containers themselves cannot be annotated: `dir="auto"` skips text
-      // inside a descendant that carries its own `dir`, so a list of annotated
-      // items would resolve LTR. `:has(…:dir(rtl))` asks the same question from
-      // the container without depending on its own direction. The values
-      // restate the markdown sheet's own; a browser without `:has()` or
-      // `:dir()` drops these rules and simply keeps the unmirrored surface.
-      `html:root :where(ul,ol):has(li:dir(rtl)){padding-left:0;padding-right:18px}`,
-      'html:root blockquote:has(:dir(rtl)){border-left:0;'
+      // the elements the browser script annotated with `dir="auto"`; the
+      // `:has()` arm covers a list or quote that resolves through its
+      // children instead of its own box. The values restate the markdown
+      // sheet's own; a browser without `:has()` or `:dir()` drops these rules
+      // and simply keeps the unmirrored surface.
+      `html:root :where(ul,ol):dir(rtl),`
+      + `html:root :where(ul,ol):has(li:dir(rtl)){padding-left:0;padding-right:18px}`,
+      'html:root blockquote:dir(rtl),'
+      + 'html:root blockquote:has(:dir(rtl)){border-left:0;'
       + 'border-right:2px solid var(--dsw-alias-label-caption,currentColor);'
       + 'padding-left:0;padding-right:14px}',
     )

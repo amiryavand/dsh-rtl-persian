@@ -30,9 +30,11 @@ Arabic-script runs change typeface.
 
 ## What this does
 
-- **Per-block direction.** Each text block takes the direction of its own first
+- **Per-block direction.** Each text box takes the direction of its own first
   strong character, so a Persian paragraph is RTL and an English one stays LTR —
-  in the same conversation, in the same document.
+  in the same conversation, in the same document. That covers your own message
+  bubbles, assistant markdown, sidebar session titles, and the session
+  breadcrumb, not just rendered markdown.
 - **Mirrored physical sides.** Persian lists and blockquotes put their indent,
   marker, and rule on the right; English ones are left exactly as the surface
   drew them.
@@ -130,22 +132,37 @@ at runtime, *later* in the document. The override therefore outranks it on
 specificity — `html:root` beats `:root` — and one token retypes the whole
 surface, because every component either reads that token or inherits the result.
 
-### 2. `dir="auto"` on leaves, `:has()` on containers
+### 2. The box that owns the text gets `dir="auto"`
 
-A small browser script (`rtl.js`) marks text blocks with `dir="auto"` and watches
-for added nodes with a `MutationObserver`, coalescing work into animation frames
-so streaming assistant output costs almost nothing.
+A small browser script (`rtl.js`) annotates text boxes with `dir="auto"` and
+watches for added nodes with a `MutationObserver`, coalescing work into animation
+frames so streaming assistant output costs almost nothing.
 
-Two subtleties shaped the current design:
+**It keys on structure, not on tag names** — it asks "does this box own a run of
+text?" rather than "is this a `<p>`?". That is not a stylistic preference: a chat
+message is
 
-- **Containers are not annotated.** The HTML `auto` algorithm ignores text inside
-  any descendant that carries its own `dir`. A `<ul>` whose `<li>` children are
-  annotated therefore resolves **LTR** — worse than leaving it alone. Containers
-  are reached from the stylesheet with `:has(li:dir(rtl))` instead, which asks the
-  same question without depending on the container's own direction.
+```html
+<div class="…bubble"><span class="…plainRun">متن پیام</span></div>
+```
+
+and a rule built on a tag allow-list (`p`, `li`, `h2`, …) never matches it, so the
+message stays left-aligned while every markdown paragraph around it is already
+correct. Three subtleties — all found by inspecting the running GUI rather than a
+fixture — decide the final shape:
+
+- **Inline boxes must never be annotated.** The HTML `auto` algorithm ignores
+  text inside any descendant that carries its own `dir`. Putting `dir` on that
+  `span` hides its text from the `div`; the `div` then resolves **LTR** and the
+  bubble stays left-aligned *even though the `span` itself computed as RTL*.
+  Annotating the block box and leaving the inline run alone is what makes it work.
+- **Containers are reached from CSS, not annotated.** A `<ul>` or `<blockquote>`
+  owns block children, so it is not a text box. The stylesheet targets it with
+  `:has(li:dir(rtl))` / `:has(:dir(rtl))`, which asks the same question without
+  depending on the container's own direction.
 - **`:dir()`, not `[dir="rtl"]`.** The script writes `dir="auto"`; the browser
   resolves the *direction*. `:dir(rtl)` matches the resolved value, so the mirror
-  rules fire for exactly the elements that resolved RTL — and keep firing while
+  rules fire for exactly the boxes that resolved RTL — and keep firing while
   streaming text changes direction mid-answer.
 
 Explicitly-directed markup is never touched, and anything inside `pre`, `code`,
@@ -166,7 +183,7 @@ Vazirmatn weight — the weight is a property of the file, not of the component.
 | File | Role |
 | --- | --- |
 | `plugin.mjs` | Host half: serves the assets, builds the stylesheet, taps the index. |
-| `rtl.js` | Browser half: annotates text blocks with `dir="auto"`. |
+| `rtl.js` | Browser half: annotates the box owning each run of text with `dir="auto"`. |
 | `vazirmatn-extralight.woff2` | Vazirmatn ExtraLight (weight 200), Arabic subset. |
 | `package.json` | Plugin manifest — **required**, see [Troubleshooting](#troubleshooting). |
 
@@ -223,6 +240,19 @@ curl -sI http://127.0.0.1:3080/dsh-rtl/vazirmatn-extralight.woff2
 
 A 404 means the plugin fiber did not mount — check the `dsh web` output for a
 `dsh-rtl-persian: cannot read …` warning.
+
+### Some Persian paragraphs still hug the left edge
+
+`dir="auto"` is the standard HTML rule: a box's direction comes from its **first
+strong character**. A Persian paragraph that opens with a Latin token — a
+backticked command, a filename, a URL — therefore resolves LTR and aligns left,
+even though the rest of it is Persian. The text itself still renders with correct
+bidi ordering; only the box's alignment follows that first Latin character.
+
+This is deliberate: matching the browser's own `auto` semantics keeps behaviour
+predictable and lets the browser re-resolve direction on its own while a response
+streams. Reordering a message so it opens with the Persian word is the reliable
+fix when the alignment matters.
 
 ### The row did nothing after I edited `plugin.mjs`
 

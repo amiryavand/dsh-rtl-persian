@@ -60,6 +60,11 @@ function inlineFont(css) {
  * Content that exercises every rule the plugin ships: per-block direction,
  * mirrored list and blockquote sides, a table, Persian emphasis, and the
  * code paths that must stay LTR.
+ *
+ * The `.bubble` cases mirror the real chat surface exactly, because that shape
+ * is what the structural rule in `rtl.js` exists for: a block box whose only
+ * child is an inline run. Annotating the inline `span` instead of the `div`
+ * leaves the message left-aligned, which is the bug the demo now guards.
  */
 const SAMPLE = `
 <div class="_markdown _demo-content" id="root">
@@ -76,6 +81,8 @@ const SAMPLE = `
   <table><tr><th id="th-fa">سرستون</th><th>Header</th></tr><tr><td>خانه یک</td><td>Cell one</td></tr></table>
   <pre id="code">const greeting = 'سلام دنیا'; // یادداشت فارسی</pre>
   <p id="codeish">Inline <code>npm run build</code> inside a Persian جمله.</p>
+  <div class="bubble" id="bubble-fa"><span class="plainRun">پیام کاربر: متن داخل یک جعبهٔ بلوکی است و جهت از همان جعبه خوانده می‌شود.</span></div>
+  <div class="bubble" id="bubble-en"><span class="plainRun">A user message whose direction comes from the block box.</span></div>
 </div>`
 
 const css = inlineFont(collectInjection())
@@ -104,6 +111,11 @@ body{margin:0;padding:40px 32px;background:#fff;max-width:820px;font-size:15px;l
 ._demo-content code{font-family:var(--ds-font-family-code);background:#f4f4f4;padding:2px 5px;border-radius:4px}
 ._demo-content table{border-collapse:collapse;margin:16px 0}
 ._demo-content td,._demo-content th{border:1px solid #ddd;padding:6px 10px;text-align:start}
+/* The real chat bubble: a block box whose only child is an inline run. */
+.bubble{display:block;background:#f0f2f5;border-radius:14px;padding:8px 14px;margin:16px 0 8px;max-width:80%}
+.bubble .plainRun{display:inline}
+#bubble-fa{margin-left:auto}
+#bubble-en{margin-right:auto}
 </style>
 <style data-dsh-rtl>${css}</style>
 </head>

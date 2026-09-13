@@ -1,0 +1,19 @@
+# macOS
+.DS_Store
+
+# Dependencies
+node_modules/
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Logs and editor state
+*.log
+npm-debug.log*
+.idea/
+.vscode/
+*.swp
+
+# Local scratch
+/tmp/
+*.local

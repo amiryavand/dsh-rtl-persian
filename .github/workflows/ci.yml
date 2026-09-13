@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install
+        run: npm install --no-audit --no-fund
+
+      - name: Syntax and manifest contract
+        run: npm run check
+
+      - name: Regenerate the rendering demo
+        run: npm run build:demo
+
+      - name: The committed demo must match the plugin
+        run: |
+          if ! git diff --exit-code -- docs/demo.html; then
+            echo "::error::docs/demo.html is stale — run 'npm run build:demo' and commit the result"
+            exit 1
+          fi

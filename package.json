@@ -1,0 +1,59 @@
+{
+  "name": "dsh-rtl-persian",
+  "version": "1.0.0",
+  "description": "Bidirectional Persian/Arabic text and Vazirmatn typography for the DeepSeek Harness (dsh) Web GUI.",
+  "type": "module",
+  "main": "plugin.mjs",
+  "exports": {
+    ".": "./plugin.mjs"
+  },
+  "files": [
+    "plugin.mjs",
+    "rtl.js",
+    "vazirmatn-extralight.woff2",
+    "README.md",
+    "README.fa.md",
+    "LICENSE",
+    "THIRD-PARTY-NOTICES.md"
+  ],
+  "scripts": {
+    "check": "node --check plugin.mjs && node --check rtl.js && node scripts/check-manifest.mjs",
+    "build:demo": "node scripts/build-demo.mjs"
+  },
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "cordis",
+    "rtl",
+    "bidi",
+    "persian",
+    "farsi",
+    "arabic",
+    "vazirmatn",
+    "localization",
+    "i18n",
+    "web-gui"
+  ],
+  "author": "amiryavand",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amiryavand/dsh-rtl-persian.git"
+  },
+  "homepage": "https://github.com/amiryavand/dsh-rtl-persian#readme",
+  "bugs": {
+    "url": "https://github.com/amiryavand/dsh-rtl-persian/issues"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/schemastery": ">=3.18.0"
+  },
+  "devDependencies": {
+    "@deepseek-ai/schemastery": "^3.18.2"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

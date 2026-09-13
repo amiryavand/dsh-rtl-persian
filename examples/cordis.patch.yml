@@ -1,0 +1,34 @@
+# Example patch entry for dsh-rtl-persian.
+#
+# This is NOT a drop-in replacement for your profile patch file — your
+# $DSH_HOME/profiles/web/cordis.patch.yml probably carries other entries (MCP
+# servers, model rows). Merge the `- insert:` block below into that file.
+#
+# Profile: $DSH_HOME/profiles/web/cordis.patch.yml
+# Docs:    https://github.com/amiryavand/dsh-rtl-persian#install
+
+# Minimal form — everything on, no configuration needed.
+- insert:
+    - id: dsh-rtl-persian
+      name: './plugins/dsh-rtl/plugin.mjs'
+
+# Every option, for reference. Delete the `config` block to accept the defaults.
+#
+#   enabled   boolean, default true
+#       Master switch. `false` mounts nothing at all: no routes, no index taps.
+#
+#   font      boolean, default true
+#       Serve the bundled Vazirmatn face and retype Arabic-script runs with it.
+#       `false` keeps the surface's own typeface while leaving direction intact.
+#
+#   direction boolean, default true
+#       Inject the direction stylesheet and the `dir="auto"` browser script.
+#       `false` leaves the surface LTR while leaving the font intact.
+#
+# - insert:
+#     - id: dsh-rtl-persian
+#       name: './plugins/dsh-rtl/plugin.mjs'
+#       config:
+#         enabled: true
+#         font: true
+#         direction: true

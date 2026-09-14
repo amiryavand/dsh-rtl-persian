@@ -83,6 +83,14 @@ const SAMPLE = `
   <p id="codeish">Inline <code>npm run build</code> inside a Persian جمله.</p>
   <div class="bubble" id="bubble-fa"><span class="plainRun">پیام کاربر: متن داخل یک جعبهٔ بلوکی است و جهت از همان جعبه خوانده می‌شود.</span></div>
   <div class="bubble" id="bubble-en"><span class="plainRun">A user message whose direction comes from the block box.</span></div>
+  <div class="choiceGroup" role="group" aria-label="انتخاب رنگ" id="group-fa">
+    <button class="choice" role="checkbox" aria-checked="false"><span class="choiceBox" aria-hidden="true"></span><span class="choiceCopy"><span class="choiceLine"><span class="choiceLabel">آبی کم‌رنگ</span></span></span></button>
+    <button class="choice" role="checkbox" aria-checked="false"><span class="choiceBox" aria-hidden="true"></span><span class="choiceCopy"><span class="choiceLine"><span class="choiceLabel">سبز تیره</span></span></span></button>
+    <button class="choice" role="checkbox" aria-checked="false"><span class="choiceBox" aria-hidden="true"></span><span class="choiceCopy"><span class="choiceLine"><span class="choiceLabel">قرمز روشن</span></span></span></button>
+  </div>
+  <div class="choiceGroup" role="group" aria-label="Pick a colour" id="group-en">
+    <button class="choice" role="checkbox" aria-checked="false"><span class="choiceBox" aria-hidden="true"></span><span class="choiceCopy"><span class="choiceLine"><span class="choiceLabel">Light blue</span></span></span></button>
+  </div>
 </div>`
 
 const css = inlineFont(collectInjection())
@@ -116,6 +124,14 @@ body{margin:0;padding:40px 32px;background:#fff;max-width:820px;font-size:15px;l
 .bubble .plainRun{display:inline}
 #bubble-fa{margin-left:auto}
 #bubble-en{margin-right:auto}
+/* The real multiple-choice rows, including the surface's own text-align: left. */
+.choiceGroup{display:flex;flex-direction:column;gap:6px;margin:16px 0}
+.choice{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:10px;
+        background:#fff;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.choiceBox{display:grid;place-items:center;flex:none;width:16px;height:16px;border:1.5px solid #bbb;border-radius:4px}
+.choiceCopy{display:block}
+.choiceLine{display:flex}
+.choiceLabel{display:block;font-weight:500}
 </style>
 <style data-dsh-rtl>${css}</style>
 </head>

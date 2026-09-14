@@ -175,6 +175,20 @@ function buildCss(font, direction) {
       + 'html:root blockquote:has(:dir(rtl)){border-left:0;'
       + 'border-right:2px solid var(--dsw-alias-label-caption,currentColor);'
       + 'padding-left:0;padding-right:14px}',
+      // The multiple-choice surface draws a choice as `[indicator][label]` in a
+      // flex row and pins `text-align: left` on that row. The row cannot carry
+      // `dir="auto"` of its own: the script annotates the *label*, and `auto`
+      // ignores text inside a descendant that has its own `dir`, so the row
+      // would resolve LTR off an empty text run. The direction therefore comes
+      // from the label through `:dir()` and is applied to the choice *group* —
+      // every row inherits it, including the free-text row, which holds only a
+      // field and so has no text to resolve a direction from. Scoped to a group
+      // that actually holds choices, so no other `role="group"` is affected.
+      'html:root :where([role="group"]):has([role="checkbox"],[role="radio"])'
+      + ':has(:dir(rtl)){direction:rtl}',
+      // Restating the row's alignment as `start` lets it follow that direction;
+      // for an LTR row `start` is the same edge the surface already used.
+      'html:root :where([role="checkbox"],[role="radio"]){text-align:start}',
     )
   }
 

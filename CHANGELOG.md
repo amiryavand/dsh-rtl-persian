@@ -5,6 +5,34 @@ All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] — 2026-09-14
+
+### Fixed
+
+- **The multiple-choice question card was LTR.** The `ask_user_question` surface
+  draws an option as `[indicator][label]` in a flex row and pins
+  `text-align: left` on that row, so a Persian option kept its checkbox on the
+  left and its label on the left edge.
+
+  The row cannot carry `dir="auto"` itself: the browser script annotates the
+  *label*, and the `auto` algorithm ignores text inside a descendant that has its
+  own `dir`, so the row would have resolved LTR off an empty text run. The
+  direction is instead read from the label with `:dir()` and applied to the
+  choice **group**, which every row inherits — including the free-text row, which
+  holds only a field and so has no text of its own to resolve from. The row's
+  alignment is restated as `start` so it follows.
+
+  Verified against the live card: indicator 9px from the left becomes 13px from
+  the right, labels align right, and the card's own English controls (`Submit`,
+  `Skip this question`) are untouched. Each option is judged independently, so an
+  English choice inside a Persian question keeps the LTR layout.
+
+### Added
+
+- `docs/demo.html` and `docs/preview.png` now include the real choice-row shape
+  (`role="group"` wrapping `role="checkbox"` rows), in both languages, so the
+  structure and the surface's own `text-align: left` are exercised.
+
 ## [1.0.1] — 2026-09-13
 
 ### Fixed
@@ -70,5 +98,6 @@ Initial release.
   self-contained `docs/demo.html` from the plugin's real stylesheet;
   `npm run check` validates syntax and the manifest contract.
 
+[1.0.2]: https://github.com/amiryavand/dsh-rtl-persian/releases/tag/v1.0.2
 [1.0.1]: https://github.com/amiryavand/dsh-rtl-persian/releases/tag/v1.0.1
 [1.0.0]: https://github.com/amiryavand/dsh-rtl-persian/releases/tag/v1.0.0

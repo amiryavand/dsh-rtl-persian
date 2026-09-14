@@ -38,6 +38,11 @@ Arabic-script runs change typeface.
 - **Mirrored physical sides.** Persian lists and blockquotes put their indent,
   marker, and rule on the right; English ones are left exactly as the surface
   drew them.
+- **Interactive surfaces, not just prose.** The multiple-choice question card
+  turns its rows around too: the checkbox moves to the right of a Persian option
+  and the label aligns to the same edge, while the card's own English controls
+  (`Submit`, `Skip this question`) stay put. Each option is judged on its own, so
+  an English choice inside a Persian question keeps its layout.
 - **Persian-only font.** Vazirmatn is attached through `unicode-range`, so it is
   used for Arabic-script codepoints and *never* for Latin letters or digits.
 - **English untouched.** The UI chrome, code blocks, and inline code keep their
@@ -167,6 +172,16 @@ fixture — decide the final shape:
 
 Explicitly-directed markup is never touched, and anything inside `pre`, `code`,
 `kbd`, or `samp` is skipped, so source code stays LTR.
+
+Choice rows are the one place where the direction cannot come from `dir="auto"`
+on the row itself. The question card draws an option as `[indicator][label]` in a
+flex row and pins `text-align: left` on it, but the row has no text of its own —
+the script annotates the *label* — and `auto` ignores text inside a descendant
+that carries its own `dir`, so the row would resolve LTR off an empty run. The
+direction is therefore read from the label with `:dir()` and applied to the
+choice **group**, which every row inherits, including the free-text row that
+holds only a field. The selector requires the group to actually contain choices,
+so no other `role="group"` is affected.
 
 ### 3. A font that can only be used for Persian
 
